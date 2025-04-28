@@ -99,18 +99,18 @@ resource "aws_ec2_transit_gateway_route_table" "spokes_tgw_rt" {
 
 # Spoke VPC TGW association
 resource "aws_ec2_transit_gateway_route_table_association" "spokes_tgw_rt_association" {
-  count = local.number_vpcs
+  for_each = var.spoke_vpcs.vpc_information
 
-  transit_gateway_attachment_id  = local.vpc_information[count.index].transit_gateway_attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spokes_tgw_rt[try(local.vpc_information[count.index].routing_domain, "spokes")].id
+  transit_gateway_attachment_id  = each.value.transit_gateway_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spokes_tgw_rt[try(each.value.routing_domain, "spokes")].id
 }
 
 # Spoke VPC TGW propagation
 resource "aws_ec2_transit_gateway_route_table_propagation" "spokes_to_spokes_propagation" {
-  count = local.spoke_to_spoke_propagation ? local.number_vpcs : 0
+  for_each = local.spoke_to_spoke_propagation ? var.spoke_vpcs.vpc_information : {}
 
-  transit_gateway_attachment_id  = local.vpc_information[count.index].transit_gateway_attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spokes_tgw_rt[try(local.vpc_information[count.index].routing_domain, "spokes")].id
+  transit_gateway_attachment_id  = each.value.transit_gateway_attachment_id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spokes_tgw_rt[try(each.value.routing_domain, "spokes")].id
 }
 
 # ---------------------- TRANSIT GATEWAY STATIC ROUTES ----------------------
@@ -241,12 +241,9 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "ingress_to_inspectio
 
 # Spoke VPCs propagation to the Inspection RT - anytime this VPC is created
 resource "aws_ec2_transit_gateway_route_table_propagation" "spokes_to_inspection_propagation" {
-  count = (
-    local.spoke_to_inspection_propagation &&
-    try(local.associate_and_propagate_to_tgw["inspection"], true)
-  ) ? local.number_vpcs : 0
+  for_each = try(local.associate_and_propagate_to_tgw["inspection"], true) ? var.spoke_vpcs.vpc_information : {}
 
-  transit_gateway_attachment_id  = local.vpc_information[count.index].transit_gateway_attachment_id
+  transit_gateway_attachment_id  = each.value.transit_gateway_attachment_id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.tgw_route_table["inspection"].id
 }
 
