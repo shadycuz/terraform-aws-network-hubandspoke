@@ -249,7 +249,6 @@ variable "spoke_vpcs" {
   description = <<-EOF
   Variable used to provide the information about the Spoke VPCs to include in the hub and spoke architecture. Information to provide is the following one:
     - `routing_domains` = (Optional|list(string)) Definition of the different routing domains for the Spoke VPCs - for example *prod* or *dev*. If this variable is not provided, all the Spoke VPCs will be associated to a common routing domain (*spokes*).
-    - `number_vpcs` = (Optional|number) Total number of Spoke VPCs that have been attached to the Transit Gateway, regardless of the routing domain.
     - `vpc_information` = (Optional|map(string)) Information about the VPCs to include in the architecture. Inside the variable, a map of the following keys is expected:
       - `vpc_id` = (Optional|string) VPC ID. *This value is not used in this version of the module, we keep it as placehoder when adding support for centralized VPC endpoints*.
       - `transit_gateway_attachment_id` = (Optional|string) Transit Gateway VPC attachment ID.
@@ -262,10 +261,9 @@ EOF
 
   # ---------------- VALID KEYS FOR var.spoke_vpcs ----------------
   validation {
-    error_message = "Only valid key values for var.spoke_vpcs: \"routing_domains\", \"number_vpcs\", \"vpc_information\"."
+    error_message = "Only valid key values for var.spoke_vpcs: \"routing_domains\", \"vpc_information\"."
     condition = length(setsubtract(keys(var.spoke_vpcs), [
       "routing_domains",
-      "number_vpcs",
       "vpc_information"
     ])) == 0
   }

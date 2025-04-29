@@ -42,7 +42,6 @@ module "hub-and-spoke" {
   }
 
   spoke_vpcs = {
-    number_vpcs = length(var.spoke_vpcs)
     vpc_information = { for k, v in module.spoke_vpcs : k => {
       vpc_id                        = v.vpc_attributes.id
       transit_gateway_attachment_id = v.transit_gateway_attachment_id
@@ -50,7 +49,7 @@ module "hub-and-spoke" {
   }
 }
 
-# Spoke VPCs 
+# Spoke VPCs
 module "spoke_vpcs" {
   for_each = var.spoke_vpcs
   source   = "aws-ia/vpc/aws"
